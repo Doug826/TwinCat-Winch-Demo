@@ -1,0 +1,13 @@
+PROGRAM PRG_WinchDemo
+VAR
+    fbHmiInterface : FB_HmiInterface;
+    fbWinchControl : FB_WinchControl;
+    stHmiIn : ST_HmiInputs;
+    stHmiOut : ST_HmiOutputs;
+    xEStopActive : BOOL;
+END_VAR
+
+fbHmiInterface(stHmiIn := stHmiIn, stWinchStatus := fbWinchControl.stStatus);
+fbWinchControl(stCommands := fbHmiInterface.stCommands, xEStopActive := xEStopActive);
+stHmiOut := fbHmiInterface.stHmiOut;
+END_PROGRAM

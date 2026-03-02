@@ -1,0 +1,37 @@
+FUNCTION_BLOCK FB_HmiInterface
+VAR_INPUT
+    stHmiIn : ST_HmiInputs;
+    stWinchStatus : ST_WinchStatus;
+END_VAR
+VAR_OUTPUT
+    stCommands : ST_WinchCommands;
+    stHmiOut : ST_HmiOutputs;
+END_VAR
+
+stCommands.eRequestedMode := stWinchStatus.eMode;
+IF stHmiIn.xModeOff THEN
+    stCommands.eRequestedMode := E_WinchMode.Off;
+ELSIF stHmiIn.xModeManual THEN
+    stCommands.eRequestedMode := E_WinchMode.Manual;
+ELSIF stHmiIn.xModeAuto THEN
+    stCommands.eRequestedMode := E_WinchMode.Auto;
+END_IF
+
+stCommands.xEnable := stHmiIn.xEnable;
+stCommands.xDisable := stHmiIn.xDisable;
+stCommands.xHome := stHmiIn.xHome;
+stCommands.xStop := stHmiIn.xStop;
+stCommands.xRunFwd := stHmiIn.xRunFwd;
+stCommands.xRunRev := stHmiIn.xRunRev;
+stCommands.xAutoStart := stHmiIn.xAutoStart;
+stCommands.xAutoStop := stHmiIn.xAutoStop;
+stCommands.xResetAlarms := stHmiIn.xResetAlarms;
+
+stHmiOut.fPositionMm := stWinchStatus.fPositionMm;
+stHmiOut.xAxisEnabled := stWinchStatus.xAxisEnabled;
+stHmiOut.eMode := stWinchStatus.eMode;
+stHmiOut.xAlarmTravelLimit := stWinchStatus.xAlarmTravelLimit;
+stHmiOut.xAlarmEStop := stWinchStatus.xAlarmEStop;
+stHmiOut.xAlarmEStopStopTimeout := stWinchStatus.xAlarmEStopStopTimeout;
+stHmiOut.xAutoBusy := stWinchStatus.xAutoBusy;
+END_FUNCTION_BLOCK

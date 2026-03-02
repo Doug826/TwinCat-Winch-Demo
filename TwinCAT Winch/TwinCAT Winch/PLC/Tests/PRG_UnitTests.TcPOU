@@ -1,0 +1,7 @@
+PROGRAM PRG_UnitTests
+VAR
+    fbWinchDemoTests : FB_WinchDemoTests;
+END_VAR
+
+fbWinchDemoTests();
+END_PROGRAM
