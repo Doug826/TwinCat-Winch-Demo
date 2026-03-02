@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="PRG_WinchDemo" Id="{fcc99858-2f01-40ff-a1a6-549f8e050fd0}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM PRG_WinchDemo
+VAR
+    fbHmiInterface : FB_HmiInterface;
+    fbWinchControl : FB_WinchControl;
+    stHmiIn : ST_HmiInputs;
+    stHmiOut : ST_HmiOutputs;
+    xEStopActive : BOOL;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[fbHmiInterface(stHmiIn := stHmiIn, stWinchStatus := fbWinchControl.stStatus);
+fbWinchControl(stCommands := fbHmiInterface.stCommands, xEStopActive := xEStopActive);
+stHmiOut := fbHmiInterface.stHmiOut;]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

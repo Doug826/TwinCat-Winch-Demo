@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_WinchControl" Id="{2f3b9bf7-a95d-4b1c-9f72-8c1a62cf3732}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_WinchControl
+VAR_INPUT
+    stCommands : ST_WinchCommands;
+    xEStopActive : BOOL;
+    fCycleTimeS : LREAL := 0.01;
+END_VAR
+VAR_OUTPUT
+    stStatus : ST_WinchStatus;
+END_VAR
+VAR
+    eModeCurrent : E_WinchMode := E_WinchMode.Off;
+    eAutoStep : INT;
+    fVelocityMmS : LREAL;
+    fbEStopStopTimer : TON;
+    xMoveToTarget : BOOL;
+    fTargetPositionMm : LREAL;
+    xPrevAutoStart : BOOL;
+    xPrevResetAlarms : BOOL;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF stCommands.xResetAlarms AND NOT xPrevResetAlarms THEN
+    stStatus.xAlarmTravelLimit := FALSE;
+    stStatus.xAlarmEStop := FALSE;
+    stStatus.xAlarmEStopStopTimeout := FALSE;
+END_IF
+xPrevResetAlarms := stCommands.xResetAlarms;
+
+IF xEStopActive THEN
+    stStatus.xAlarmEStop := TRUE;
+    stStatus.xAxisEnabled := FALSE;
+    stStatus.xAutoBusy := FALSE;
+    eAutoStep := 0;
+    eModeCurrent := E_WinchMode.Off;
+    xMoveToTarget := FALSE;
+    fVelocityMmS := 0.0;
+ELSE
+    CASE eModeCurrent OF
+        E_WinchMode.Off:
+            IF stCommands.eRequestedMode = E_WinchMode.Manual THEN
+                eModeCurrent := E_WinchMode.Manual;
+            ELSIF stCommands.eRequestedMode = E_WinchMode.Auto THEN
+                eModeCurrent := E_WinchMode.Auto;
+            END_IF
+        E_WinchMode.Manual:
+            IF stCommands.eRequestedMode = E_WinchMode.Off THEN
+                eModeCurrent := E_WinchMode.Off;
+            END_IF
+        E_WinchMode.Auto:
+            IF stCommands.eRequestedMode = E_WinchMode.Off THEN
+                eModeCurrent := E_WinchMode.Off;
+                stStatus.xAutoBusy := FALSE;
+                eAutoStep := 0;
+            END_IF
+    END_CASE
+
+    IF eModeCurrent = E_WinchMode.Off THEN
+        stStatus.xAxisEnabled := FALSE;
+        stStatus.xAutoBusy := FALSE;
+        eAutoStep := 0;
+        xMoveToTarget := FALSE;
+        fVelocityMmS := 0.0;
+    ELSIF eModeCurrent = E_WinchMode.Manual THEN
+        IF stCommands.xEnable THEN
+            stStatus.xAxisEnabled := TRUE;
+        END_IF
+        IF stCommands.xDisable THEN
+            stStatus.xAxisEnabled := FALSE;
+            fVelocityMmS := 0.0;
+        END_IF
+        IF stCommands.xStop THEN
+            fVelocityMmS := 0.0;
+            xMoveToTarget := FALSE;
+        END_IF
+        IF stCommands.xHome THEN
+            xMoveToTarget := TRUE;
+            fTargetPositionMm := 0.0;
+        END_IF
+        IF stCommands.xRunFwd AND stStatus.xAxisEnabled THEN
+            xMoveToTarget := FALSE;
+            fVelocityMmS := 50.0;
+        ELSIF stCommands.xRunRev AND stStatus.xAxisEnabled THEN
+            xMoveToTarget := FALSE;
+            fVelocityMmS := -50.0;
+        END_IF
+    ELSE
+        IF stCommands.xAutoStop THEN
+            stStatus.xAutoBusy := FALSE;
+            eAutoStep := 0;
+            xMoveToTarget := FALSE;
+            fVelocityMmS := 0.0;
+        END_IF
+
+        IF stCommands.xAutoStart AND NOT xPrevAutoStart AND NOT stStatus.xAutoBusy THEN
+            stStatus.xAutoBusy := TRUE;
+            eAutoStep := 1;
+        END_IF
+
+        IF stStatus.xAutoBusy THEN
+            CASE eAutoStep OF
+                1:
+                    stStatus.xAxisEnabled := TRUE;
+                    eAutoStep := 2;
+                2:
+                    xMoveToTarget := TRUE;
+                    fTargetPositionMm := 0.0;
+                    IF ABS(stStatus.fPositionMm - fTargetPositionMm) <= 0.5 THEN
+                        eAutoStep := 3;
+                    END_IF
+                3:
+                    xMoveToTarget := TRUE;
+                    fTargetPositionMm := 250.0;
+                    IF ABS(stStatus.fPositionMm - fTargetPositionMm) <= 0.5 THEN
+                        eAutoStep := 4;
+                    END_IF
+                4:
+                    xMoveToTarget := TRUE;
+                    fTargetPositionMm := 500.0;
+                    IF ABS(stStatus.fPositionMm - fTargetPositionMm) <= 0.5 THEN
+                        eAutoStep := 5;
+                    END_IF
+                5:
+                    xMoveToTarget := TRUE;
+                    fTargetPositionMm := 0.0;
+                    IF ABS(stStatus.fPositionMm - fTargetPositionMm) <= 0.5 THEN
+                        eAutoStep := 6;
+                    END_IF
+                6:
+                    stStatus.xAxisEnabled := FALSE;
+                    stStatus.xAutoBusy := FALSE;
+                    eAutoStep := 0;
+                    xMoveToTarget := FALSE;
+                    fVelocityMmS := 0.0;
+            END_CASE
+        END_IF
+    END_IF
+END_IF
+xPrevAutoStart := stCommands.xAutoStart;
+
+IF xMoveToTarget AND stStatus.xAxisEnabled THEN
+    IF stStatus.fPositionMm < fTargetPositionMm - 0.5 THEN
+        fVelocityMmS := 50.0;
+    ELSIF stStatus.fPositionMm > fTargetPositionMm + 0.5 THEN
+        fVelocityMmS := -50.0;
+    ELSE
+        fVelocityMmS := 0.0;
+    END_IF
+END_IF
+
+stStatus.fPositionMm := stStatus.fPositionMm + (fVelocityMmS * fCycleTimeS);
+
+IF (stStatus.fPositionMm < -5.0) OR (stStatus.fPositionMm > 505.0) THEN
+    stStatus.xAlarmTravelLimit := TRUE;
+    fVelocityMmS := 0.0;
+    xMoveToTarget := FALSE;
+END_IF
+
+fbEStopStopTimer(IN := xEStopActive AND (ABS(fVelocityMmS) > 0.1), PT := T#100MS);
+IF fbEStopStopTimer.Q THEN
+    stStatus.xAlarmEStopStopTimeout := TRUE;
+END_IF
+
+stStatus.eMode := eModeCurrent;]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

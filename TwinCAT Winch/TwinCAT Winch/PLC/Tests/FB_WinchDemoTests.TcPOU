@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_WinchDemoTests" Id="{66a9f46c-2a67-4d06-b678-c9bd198f894b}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_WinchDemoTests
+VAR_OUTPUT
+    xDone : BOOL;
+    xPassed : BOOL;
+    nFailed : UINT;
+END_VAR
+VAR
+    fb : FB_WinchControl;
+    stCmd : ST_WinchCommands;
+    i : INT;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF xDone THEN
+    RETURN;
+END_IF
+
+nFailed := 0;
+
+(* Test 1: mode transition rules *)
+stCmd.eRequestedMode := E_WinchMode.Auto;
+fb(stCommands := stCmd, xEStopActive := FALSE);
+IF fb.stStatus.eMode <> E_WinchMode.Auto THEN nFailed := nFailed + 1; END_IF
+stCmd.eRequestedMode := E_WinchMode.Manual;
+fb(stCommands := stCmd, xEStopActive := FALSE);
+IF fb.stStatus.eMode <> E_WinchMode.Auto THEN nFailed := nFailed + 1; END_IF
+stCmd.eRequestedMode := E_WinchMode.Off;
+fb(stCommands := stCmd, xEStopActive := FALSE);
+IF fb.stStatus.eMode <> E_WinchMode.Off THEN nFailed := nFailed + 1; END_IF
+stCmd.eRequestedMode := E_WinchMode.Manual;
+fb(stCommands := stCmd, xEStopActive := FALSE);
+IF fb.stStatus.eMode <> E_WinchMode.Manual THEN nFailed := nFailed + 1; END_IF
+stCmd.eRequestedMode := E_WinchMode.Auto;
+fb(stCommands := stCmd, xEStopActive := FALSE);
+IF fb.stStatus.eMode <> E_WinchMode.Manual THEN nFailed := nFailed + 1; END_IF
+
+(* Test 2: Off disables axis *)
+stCmd.eRequestedMode := E_WinchMode.Off;
+stCmd.xEnable := TRUE;
+fb(stCommands := stCmd, xEStopActive := FALSE);
+IF fb.stStatus.xAxisEnabled THEN nFailed := nFailed + 1; END_IF
+stCmd.xEnable := FALSE;
+
+(* Test 3: Manual commands *)
+stCmd.eRequestedMode := E_WinchMode.Manual;
+fb(stCommands := stCmd, xEStopActive := FALSE);
+stCmd.xEnable := TRUE;
+fb(stCommands := stCmd, xEStopActive := FALSE);
+IF NOT fb.stStatus.xAxisEnabled THEN nFailed := nFailed + 1; END_IF
+stCmd.xEnable := FALSE;
+stCmd.xRunFwd := TRUE;
+FOR i := 1 TO 20 DO fb(stCommands := stCmd, xEStopActive := FALSE); END_FOR
+IF fb.stStatus.fPositionMm <= 0.0 THEN nFailed := nFailed + 1; END_IF
+stCmd.xRunFwd := FALSE;
+stCmd.xRunRev := TRUE;
+FOR i := 1 TO 20 DO fb(stCommands := stCmd, xEStopActive := FALSE); END_FOR
+stCmd.xRunRev := FALSE;
+stCmd.xHome := TRUE;
+FOR i := 1 TO 200 DO fb(stCommands := stCmd, xEStopActive := FALSE); END_FOR
+IF ABS(fb.stStatus.fPositionMm) > 1.0 THEN nFailed := nFailed + 1; END_IF
+stCmd.xHome := FALSE;
+stCmd.xStop := TRUE;
+fb(stCommands := stCmd, xEStopActive := FALSE);
+stCmd.xStop := FALSE;
+stCmd.xDisable := TRUE;
+fb(stCommands := stCmd, xEStopActive := FALSE);
+IF fb.stStatus.xAxisEnabled THEN nFailed := nFailed + 1; END_IF
+stCmd.xDisable := FALSE;
+
+(* Test 4: Auto sequence and stop *)
+stCmd.eRequestedMode := E_WinchMode.Off; fb(stCommands := stCmd, xEStopActive := FALSE);
+stCmd.eRequestedMode := E_WinchMode.Auto; fb(stCommands := stCmd, xEStopActive := FALSE);
+stCmd.xAutoStart := TRUE; fb(stCommands := stCmd, xEStopActive := FALSE);
+stCmd.xAutoStart := FALSE;
+FOR i := 1 TO 2200 DO fb(stCommands := stCmd, xEStopActive := FALSE); END_FOR
+IF fb.stStatus.xAutoBusy THEN nFailed := nFailed + 1; END_IF
+IF fb.stStatus.xAxisEnabled THEN nFailed := nFailed + 1; END_IF
+
+stCmd.xAutoStart := TRUE; fb(stCommands := stCmd, xEStopActive := FALSE);
+stCmd.xAutoStart := FALSE;
+FOR i := 1 TO 20 DO fb(stCommands := stCmd, xEStopActive := FALSE); END_FOR
+stCmd.xAutoStop := TRUE; fb(stCommands := stCmd, xEStopActive := FALSE);
+stCmd.xAutoStop := FALSE;
+IF fb.stStatus.xAutoBusy THEN nFailed := nFailed + 1; END_IF
+
+(* Test 5: Limits alarm *)
+stCmd.eRequestedMode := E_WinchMode.Manual; fb(stCommands := stCmd, xEStopActive := FALSE);
+stCmd.xEnable := TRUE; fb(stCommands := stCmd, xEStopActive := FALSE); stCmd.xEnable := FALSE;
+stCmd.xRunFwd := TRUE;
+FOR i := 1 TO 1200 DO fb(stCommands := stCmd, xEStopActive := FALSE); END_FOR
+stCmd.xRunFwd := FALSE;
+IF NOT fb.stStatus.xAlarmTravelLimit THEN nFailed := nFailed + 1; END_IF
+
+(* Test 6: E-stop response *)
+stCmd.xResetAlarms := TRUE; fb(stCommands := stCmd, xEStopActive := FALSE);
+stCmd.xResetAlarms := FALSE;
+stCmd.xRunRev := TRUE;
+FOR i := 1 TO 20 DO fb(stCommands := stCmd, xEStopActive := FALSE); END_FOR
+fb(stCommands := stCmd, xEStopActive := TRUE);
+IF fb.stStatus.eMode <> E_WinchMode.Off THEN nFailed := nFailed + 1; END_IF
+IF fb.stStatus.xAxisEnabled THEN nFailed := nFailed + 1; END_IF
+IF NOT fb.stStatus.xAlarmEStop THEN nFailed := nFailed + 1; END_IF
+IF fb.stStatus.xAutoBusy THEN nFailed := nFailed + 1; END_IF
+stCmd.xRunRev := FALSE;
+
+xPassed := (nFailed = 0);
+xDone := TRUE;]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

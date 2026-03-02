@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="PRG_UnitTests" Id="{c5a7cd08-48ca-45cd-a7f2-11bb74cc6f7f}" SpecialFunc="None">
+    <Declaration><![CDATA[PROGRAM PRG_UnitTests
+VAR
+    fbWinchDemoTests : FB_WinchDemoTests;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[fbWinchDemoTests();]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>

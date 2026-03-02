@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <POU Name="FB_HmiInterface" Id="{a474b91e-98e9-4ef8-8471-8c6a9e90467e}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_HmiInterface
+VAR_INPUT
+    stHmiIn : ST_HmiInputs;
+    stWinchStatus : ST_WinchStatus;
+END_VAR
+VAR_OUTPUT
+    stCommands : ST_WinchCommands;
+    stHmiOut : ST_HmiOutputs;
+END_VAR]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[stCommands.eRequestedMode := stWinchStatus.eMode;
+IF stHmiIn.xModeOff THEN
+    stCommands.eRequestedMode := E_WinchMode.Off;
+ELSIF stHmiIn.xModeManual THEN
+    stCommands.eRequestedMode := E_WinchMode.Manual;
+ELSIF stHmiIn.xModeAuto THEN
+    stCommands.eRequestedMode := E_WinchMode.Auto;
+END_IF
+
+stCommands.xEnable := stHmiIn.xEnable;
+stCommands.xDisable := stHmiIn.xDisable;
+stCommands.xHome := stHmiIn.xHome;
+stCommands.xStop := stHmiIn.xStop;
+stCommands.xRunFwd := stHmiIn.xRunFwd;
+stCommands.xRunRev := stHmiIn.xRunRev;
+stCommands.xAutoStart := stHmiIn.xAutoStart;
+stCommands.xAutoStop := stHmiIn.xAutoStop;
+stCommands.xResetAlarms := stHmiIn.xResetAlarms;
+
+stHmiOut.fPositionMm := stWinchStatus.fPositionMm;
+stHmiOut.xAxisEnabled := stWinchStatus.xAxisEnabled;
+stHmiOut.eMode := stWinchStatus.eMode;
+stHmiOut.xAlarmTravelLimit := stWinchStatus.xAlarmTravelLimit;
+stHmiOut.xAlarmEStop := stWinchStatus.xAlarmEStop;
+stHmiOut.xAlarmEStopStopTimeout := stWinchStatus.xAlarmEStopStopTimeout;
+stHmiOut.xAutoBusy := stWinchStatus.xAutoBusy;]]></ST>
+    </Implementation>
+  </POU>
+</TcPlcObject>
