@@ -1,0 +1,55 @@
+TYPE ST_HmiInputs :
+STRUCT
+    xModeOff : BOOL;
+    xModeManual : BOOL;
+    xModeAuto : BOOL;
+    xEnable : BOOL;
+    xDisable : BOOL;
+    xHome : BOOL;
+    xStop : BOOL;
+    xRunFwd : BOOL;
+    xRunRev : BOOL;
+    xAutoStart : BOOL;
+    xAutoStop : BOOL;
+    xResetAlarms : BOOL;
+END_STRUCT
+END_TYPE
+
+TYPE ST_HmiOutputs :
+STRUCT
+    fPositionMm : LREAL;
+    xAxisEnabled : BOOL;
+    eMode : E_WinchMode;
+    xAlarmTravelLimit : BOOL;
+    xAlarmEStop : BOOL;
+    xAlarmEStopStopTimeout : BOOL;
+    xAutoBusy : BOOL;
+END_STRUCT
+END_TYPE
+
+TYPE ST_WinchCommands :
+STRUCT
+    eRequestedMode : E_WinchMode;
+    xEnable : BOOL;
+    xDisable : BOOL;
+    xHome : BOOL;
+    xStop : BOOL;
+    xRunFwd : BOOL;
+    xRunRev : BOOL;
+    xAutoStart : BOOL;
+    xAutoStop : BOOL;
+    xResetAlarms : BOOL;
+END_STRUCT
+END_TYPE
+
+TYPE ST_WinchStatus :
+STRUCT
+    fPositionMm : LREAL;
+    xAxisEnabled : BOOL;
+    eMode : E_WinchMode;
+    xAlarmTravelLimit : BOOL;
+    xAlarmEStop : BOOL;
+    xAlarmEStopStopTimeout : BOOL;
+    xAutoBusy : BOOL;
+END_STRUCT
+END_TYPE
