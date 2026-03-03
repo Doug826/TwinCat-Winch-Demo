@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <DUT Name="DUT_WinchMode" Id="{a96df46c-1192-4a89-a363-ec7b37544f8f}">
+    <Declaration><![CDATA[TYPE E_WinchMode :
+(
+    Off := 0,
+    Manual := 1,
+    Auto := 2
+);
+END_TYPE]]></Declaration>
+  </DUT>
+</TcPlcObject>

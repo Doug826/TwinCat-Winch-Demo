@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <DUT Name="ST_WinchCommands" Id="{ea833dd2-bdb4-46fa-b492-4fd2d30becf8}">
+    <Declaration><![CDATA[TYPE ST_WinchCommands :
+STRUCT
+    eRequestedMode : E_WinchMode;
+    xEnable : BOOL;
+    xDisable : BOOL;
+    xHome : BOOL;
+    xStop : BOOL;
+    xRunFwd : BOOL;
+    xRunRev : BOOL;
+    xAutoStart : BOOL;
+    xAutoStop : BOOL;
+    xResetAlarms : BOOL;
+END_STRUCT
+END_TYPE]]></Declaration>
+  </DUT>
+</TcPlcObject>

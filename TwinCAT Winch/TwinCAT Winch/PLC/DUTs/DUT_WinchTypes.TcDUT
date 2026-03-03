@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <DUT Name="DUT_WinchTypes" Id="{fbf95f56-fede-4a8d-a2e7-1491de2a9ff1}">
+    <Declaration><![CDATA[TYPE ST_HmiInputs :
+STRUCT
+    xModeOff : BOOL;
+    xModeManual : BOOL;
+    xModeAuto : BOOL;
+    xEnable : BOOL;
+    xDisable : BOOL;
+    xHome : BOOL;
+    xStop : BOOL;
+    xRunFwd : BOOL;
+    xRunRev : BOOL;
+    xAutoStart : BOOL;
+    xAutoStop : BOOL;
+    xResetAlarms : BOOL;
+END_STRUCT
+END_TYPE]]></Declaration>
+  </DUT>
+</TcPlcObject>
