@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <DUT Name="ST_HmiOutputs" Id="{f509d395-0f67-4b96-8f0d-a7241e67d8a8}">
+    <Declaration><![CDATA[TYPE ST_HmiOutputs :
+STRUCT
+    fPositionMm : LREAL;
+    xAxisEnabled : BOOL;
+    eMode : E_WinchMode;
+    xAlarmTravelLimit : BOOL;
+    xAlarmEStop : BOOL;
+    xAlarmEStopStopTimeout : BOOL;
+    xAutoBusy : BOOL;
+END_STRUCT
+END_TYPE]]></Declaration>
+  </DUT>
+</TcPlcObject>

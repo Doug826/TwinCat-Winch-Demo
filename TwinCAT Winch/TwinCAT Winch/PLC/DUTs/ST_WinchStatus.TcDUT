@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1">
+  <DUT Name="ST_WinchStatus" Id="{76f98901-64e9-46d5-8f8f-359cb26d7b2c}">
+    <Declaration><![CDATA[TYPE ST_WinchStatus :
+STRUCT
+    fPositionMm : LREAL;
+    xAxisEnabled : BOOL;
+    eMode : E_WinchMode;
+    xAlarmTravelLimit : BOOL;
+    xAlarmEStop : BOOL;
+    xAlarmEStopStopTimeout : BOOL;
+    xAutoBusy : BOOL;
+END_STRUCT
+END_TYPE]]></Declaration>
+  </DUT>
+</TcPlcObject>
